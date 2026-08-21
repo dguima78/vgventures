@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://permuta-api.vgventures.com.br; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; frame-ancestors 'none'">
+  <title>VGV Platform | Administração</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/admin/styles.css?v=20260821-2">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+
+  <main id="access" class="access-shell">
+    <section class="access-brand" aria-labelledby="access-brand-title">
+      <a class="wordmark wordmark-light" href="/admin" aria-label="VGV Platform"><span>VGV</span> Platform</a>
+      <div class="access-statement">
+        <p class="kicker">Control plane</p>
+        <h1 id="access-brand-title">Governança com limites claros.</h1>
+        <p>Organizações, identidades e capacidades em uma camada administrativa separada dos dados privados de negócio.</p>
+      </div>
+      <p class="folio">Van Gogh Ventures <span>2026</span></p>
+    </section>
+
+    <section class="access-panel">
+      <form id="login-form" class="access-form" novalidate>
+        <div>
+          <p class="kicker">Acesso nomeado</p>
+          <h2>Entrar na plataforma</h2>
+          <p class="lede">Use sua identidade individual. Este acesso não concede visibilidade automática aos dados privados das organizações.</p>
+        </div>
+        <label>E-mail
+          <input name="email" type="email" autocomplete="username" maxlength="254" required>
+        </label>
+        <label>Senha
+          <input name="password" type="password" autocomplete="current-password" maxlength="256" required>
+        </label>
+        <button class="button button-primary button-wide" type="submit">Entrar</button>
+        <button id="forgot-password" class="button button-text" type="button">Esqueci minha senha</button>
+        <p id="login-message" class="form-message" role="status"></p>
+        <p id="login-error" class="form-message error" role="alert"></p>
+      </form>
+
+      <form id="recovery-form" class="access-form" novalidate hidden>
+        <div>
+          <p class="kicker">Recuperação de acesso</p>
+          <h2>Redefinir sua senha</h2>
+          <p class="lede">Informe o e-mail da sua conta para receber as instruções de redefinição.</p>
+        </div>
+        <label>E-mail
+          <input name="email" type="email" autocomplete="username" maxlength="254" required>
+        </label>
+        <button class="button button-primary button-wide" type="submit">Enviar instruções</button>
+        <button class="button button-text back-to-login" type="button">Voltar para o acesso</button>
+        <p id="recovery-message" class="form-message" role="status"></p>
+      </form>
+
+      <form id="reset-form" class="access-form" novalidate hidden>
+        <div>
+          <p class="kicker">Nova credencial</p>
+          <h2>Crie uma nova senha</h2>
+          <p class="lede">O link é sensível, temporário e de uso único.</p>
+        </div>
+        <label>Nova senha
+          <input name="newPassword" type="password" autocomplete="new-password" minlength="14" maxlength="256" required aria-describedby="reset-password-rules">
+        </label>
+        <p id="reset-password-rules" class="field-note">Mínimo de 14 caracteres, com maiúscula, minúscula, número e símbolo.</p>
+        <label>Confirme a nova senha
+          <input name="confirmation" type="password" autocomplete="new-password" minlength="14" maxlength="256" required>
+        </label>
+        <button class="button button-primary button-wide" type="submit">Atualizar senha</button>
+        <button class="button button-text back-to-login" type="button">Voltar para o acesso</button>
+        <p id="reset-error" class="form-message error" role="alert"></p>
+      </form>
+
+      <form id="invite-form" class="access-form" novalidate hidden>
+        <div>
+          <p class="kicker">Convite de organização</p>
+          <h2>Ativar sua conta</h2>
+          <p class="lede">O link de convite é sensível e de uso único. Não o encaminhe nem o compartilhe em canais públicos.</p>
+        </div>
+        <label>Nome de exibição
+          <input name="displayName" autocomplete="name" maxlength="120" required>
+        </label>
+        <label>Crie uma senha
+          <input name="password" type="password" autocomplete="new-password" minlength="14" maxlength="256" required aria-describedby="password-rules">
+        </label>
+        <p id="password-rules" class="field-note">Mínimo de 14 caracteres, com maiúscula, minúscula, número e símbolo.</p>
+        <label>Confirme a senha
+          <input name="confirmation" type="password" autocomplete="new-password" minlength="14" maxlength="256" required>
+        </label>
+        <button class="button button-primary button-wide" type="submit">Aceitar convite</button>
+        <button id="invite-login" class="button button-text" type="button">Já tenho uma conta</button>
+        <p id="invite-error" class="form-message error" role="alert"></p>
+      </form>
+
+      <section id="invite-result" class="access-result" hidden aria-live="polite">
+        <p class="kicker">Convite aceito</p>
+        <h2>Conta ativada.</h2>
+        <p>Agora entre com seu e-mail e a senha criada para acessar a organização.</p>
+        <button id="continue-login" class="button button-primary" type="button">Ir para o acesso</button>
+      </section>
+    </section>
+  </main>
+
+  <div id="app" class="app-shell" hidden>
+    <aside class="sidebar">
+      <div>
+        <a class="wordmark wordmark-light" href="/admin" aria-label="VGV Platform"><span>VGV</span> Platform</a>
+        <p class="sidebar-label">Administração</p>
+      </div>
+      <nav id="primary-nav" aria-label="Navegação principal"></nav>
+      <div class="identity-block">
+        <div class="identity-mark" id="identity-mark" aria-hidden="true"></div>
+        <div><strong id="identity-name"></strong><span id="identity-email"></span></div>
+        <button id="account-menu" class="icon-button" type="button" aria-label="Abrir opções da conta" aria-expanded="false">•••</button>
+        <div id="account-popover" class="account-popover" hidden>
+          <button id="change-password" type="button">Alterar senha</button>
+          <button id="logout" type="button">Encerrar sessão</button>
+        </div>
+      </div>
+    </aside>
+
+    <main id="main-content" class="main-content" tabindex="-1">
+      <header class="topbar">
+        <button id="mobile-nav" class="mobile-nav" type="button" aria-label="Abrir navegação" aria-expanded="false">Menu</button>
+        <div>
+          <p id="page-context" class="kicker">VGV Platform</p>
+          <h1 id="page-title">Visão geral</h1>
+        </div>
+        <div id="session-indicator" class="session-indicator"><span></span>Expiração da sessão indisponível</div>
+      </header>
+      <div id="global-message" class="global-message" role="status" hidden></div>
+      <section id="view" class="view" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <dialog id="password-dialog" class="dialog" aria-labelledby="password-dialog-title">
+    <form id="password-form" method="dialog" novalidate>
+      <div class="dialog-head"><div><p class="kicker">Segurança</p><h2 id="password-dialog-title">Alterar senha</h2></div><button class="dialog-close" type="button" aria-label="Fechar">×</button></div>
+      <p>A alteração revoga todas as sessões anteriores e mantém apenas esta sessão renovada.</p>
+      <label>Senha atual<input name="currentPassword" type="password" autocomplete="current-password" maxlength="256" required></label>
+      <label>Nova senha<input name="newPassword" type="password" autocomplete="new-password" minlength="14" maxlength="256" required></label>
+      <label>Confirme a nova senha<input name="confirmation" type="password" autocomplete="new-password" minlength="14" maxlength="256" required></label>
+      <p id="password-error" class="form-message error" role="alert"></p>
+      <div class="dialog-actions"><button class="button button-secondary dialog-close" type="button">Cancelar</button><button class="button button-primary" type="submit">Atualizar senha</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-dialog" class="dialog confirm-dialog" aria-labelledby="confirm-title">
+    <form method="dialog">
+      <p class="kicker">Confirmação necessária</p>
+      <h2 id="confirm-title">Confirmar alteração</h2>
+      <p id="confirm-message"></p>
+      <div class="dialog-actions"><button id="confirm-cancel" class="button button-secondary" value="cancel">Cancelar</button><button id="confirm-accept" class="button button-danger" value="confirm">Confirmar</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="role-dialog" class="dialog dialog-wide" aria-labelledby="role-dialog-title">
+    <form id="role-form" method="dialog" novalidate>
+      <div class="dialog-head"><div><p class="kicker">Papel personalizado</p><h2 id="role-dialog-title">Novo papel</h2></div><button class="dialog-close" type="button" aria-label="Fechar">×</button></div>
+      <input name="roleId" type="hidden">
+      <label>Código<input name="code" pattern="[a-z][a-z0-9-]*" maxlength="80" placeholder="ex.: coordenador-comercial" required></label>
+      <label>Nome<input name="name" maxlength="120" required></label>
+      <fieldset><legend>Permissões dentro da sua autoridade</legend><p class="field-note">A lista é derivada dos papéis retornados pela API. O servidor valida e limita a concessão final.</p><div id="role-permissions" class="check-grid"></div></fieldset>
+      <p id="role-error" class="form-message error" role="alert"></p>
+      <div class="dialog-actions"><button class="button button-secondary dialog-close" type="button">Cancelar</button><button class="button button-primary" type="submit">Salvar papel</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="secret-dialog" class="dialog secret-dialog" aria-labelledby="secret-dialog-title">
+    <form method="dialog">
+      <p class="kicker">Exibição única</p>
+      <h2 id="secret-dialog-title">Convite criado</h2>
+      <p>Transfira este link por um canal seguro. Ele é sensível, expira e não poderá ser recuperado nesta interface após fechar.</p>
+      <label>Link de convite<input id="invitation-url" readonly></label>
+      <p id="copy-status" class="form-message" role="status"></p>
+      <div class="dialog-actions"><button id="copy-invitation" class="button button-secondary" type="button">Copiar link</button><button id="close-secret" class="button button-primary" value="close">Fechar e ocultar</button></div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/admin/app.js?v=20260821-2"></script>
+</body>
+</html>

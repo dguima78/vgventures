@@ -1,0 +1,3 @@
+api/contact/diagnostico/config.php
+api/contact/diagnostico/data/*
+!api/contact/diagnostico/data/.htaccess

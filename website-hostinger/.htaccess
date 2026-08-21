@@ -1,0 +1,40 @@
+Options -Indexes
+DirectoryIndex index.html index.php
+ErrorDocument 404 /404.html
+
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Keep the existing form URL without redirecting POST requests to a trailing slash.
+RewriteRule ^api/contact/diagnostico$ api/contact/diagnostico/index.php [L]
+
+# Serve the admin shell for browser deep links while leaving API, PHP and static files untouched.
+RewriteCond %{REQUEST_METHOD} =GET
+RewriteRule ^admin/?$ admin/index.html [L]
+RewriteCond %{REQUEST_METHOD} =GET
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^admin(?:/.*)?$ admin/index.html [L]
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+<FilesMatch "^\.(git|env)">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^horizontal$">
+    ForceType image/png
+</FilesMatch>
+
+<FilesMatch "^hero$">
+    ForceType image/jpeg
+</FilesMatch>
+
+<FilesMatch "^alphaville-lifestyle$">
+    ForceType image/png
+</FilesMatch>
