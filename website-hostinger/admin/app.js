@@ -284,7 +284,7 @@ function empty(message) {
 
 function badge(status) {
   const labels = { active: 'Ativo', suspended: 'Suspenso', disabled: 'Desabilitado', invited: 'Convidado', succeeded: 'Sucesso', denied: 'Negado', failed: 'Falhou', trialing: 'Teste' };
-  return el('span', { className: `badge badge-${status}`, text: labels[status] || status || 'Não informado' });
+  return el('span', { className: `badge badge-${status}`, text: labels[status] || status || 'Desconhecido' });
 }
 
 function formatDate(value) {
@@ -326,6 +326,7 @@ function pagination(resource, page, reload) {
 function routeUrl(route) {
   if (MODULE_IDS.has(route)) {
     const url = new URL(`/admin/${route}`, location.origin);
+    if (state.selectedTenantId) url.searchParams.set('tenant', state.selectedTenantId);
     if (state.inviteToken) url.searchParams.set('invite', state.inviteToken);
     return `${url.pathname}${url.search}`;
   }
@@ -343,7 +344,11 @@ function routeUrl(route) {
 function routeFromLocation() {
   const path = location.pathname.replace(/\/+$/, '') || '/';
   const moduleId = path.startsWith('/admin/') ? path.slice('/admin/'.length) : '';
-  if (MODULE_IDS.has(moduleId)) return moduleId;
+  if (MODULE_IDS.has(moduleId)) {
+    const tenantId = new URLSearchParams(location.search).get('tenant');
+    if (tenantId && state.identity?.memberships.some((membership) => membership.tenantId === tenantId)) state.selectedTenantId = tenantId;
+    return moduleId;
+  }
   if (path !== '/admin') return 'overview';
   const parameters = new URLSearchParams(location.search);
   const tenantId = parameters.get('tenant');
@@ -411,7 +416,7 @@ function renderModule(moduleId) {
         el('div', {}, [el('p', { className: 'kicker', text: `Aplicação · ${module.id}` }), el('p', { text: `Interface funcional de ${module.name} integrada ao console.` })]),
         el('span', { className: 'readiness-label', text: 'Aplicação integrada' }),
       ]),
-      el('iframe', { className: 'module-frame', src: module.interfacePath, title: `${module.name} - interface funcional` }),
+      el('iframe', { className: 'module-frame', src: `${module.interfacePath}${module.interfacePath.includes('?') ? '&' : '?'}tenantId=${encodeURIComponent(state.selectedTenantId)}`, title: `${module.name} - interface funcional` }),
     ]));
     return;
   }

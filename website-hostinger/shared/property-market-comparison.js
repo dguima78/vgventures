@@ -1,11 +1,11 @@
 const IMAGE_HOSTS = new Set(['imgbr.imovelwebcdn.com', 'si9dados3.com.br']);
 let instanceCount = 0;
 
-const money = (value) => finite(value) === null ? 'Não informado' : new Intl.NumberFormat('pt-BR', {
+const money = (value) => finite(value) === null ? 'Desconhecido' : new Intl.NumberFormat('pt-BR', {
   style: 'currency', currency: 'BRL', maximumFractionDigits: 0,
 }).format(finite(value));
-const moneyPerM2 = (value) => finite(value) === null ? 'Não informado' : `${money(value)}/m²`;
-const number = (value) => finite(value) === null ? 'Não informado' : new Intl.NumberFormat('pt-BR').format(finite(value));
+const moneyPerM2 = (value) => finite(value) === null ? 'Desconhecido' : `${money(value)}/m²`;
+const number = (value) => finite(value) === null ? 'Desconhecido' : new Intl.NumberFormat('pt-BR').format(finite(value));
 
 function finite(value) {
   const parsed = Number(value);
@@ -95,9 +95,9 @@ function itemValue(item, key) {
 }
 
 function dateLabel(value) {
-  if (!value) return 'Não informado';
+  if (!value) return 'Desconhecido';
   const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? `${value}T12:00:00` : value);
-  return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' }).format(date) : 'Não informado';
+  return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' }).format(date) : 'Desconhecido';
 }
 
 function detail(label, value) {
@@ -137,13 +137,13 @@ function propertyCard(item, subject, index) {
   price.append(node('strong', '', money(itemValue(item, 'askingPrice'))), node('span', '', moneyPerM2(itemValue(item, 'askingPricePerM2'))));
   const facts = node('dl', 'pmc-card-facts');
   [
-    ['Área', finite(itemValue(item, 'areaM2')) === null ? 'Não informada' : `${number(itemValue(item, 'areaM2'))} m²`],
+    ['Área', finite(itemValue(item, 'areaM2')) === null ? 'Desconhecida' : `${number(itemValue(item, 'areaM2'))} m²`],
     ['Dormitórios', number(item?.bedrooms)], ['Suítes', number(item?.suites)],
     ['Banheiros', number(item?.bathrooms)], ['Vagas', number(itemValue(item, 'parkingSpaces'))],
   ].forEach(([label, value]) => facts.append(detail(label, value)));
 
   const listing = item?.listing ?? {};
-  const source = item?.source?.name ?? item?.sourceName ?? listing.source?.name ?? listing.sourceName ?? 'Fonte não informada';
+  const source = item?.source?.name ?? item?.sourceName ?? listing.source?.name ?? listing.sourceName ?? 'Fonte desconhecida';
   const firstSeen = item?.firstSeenAt ?? listing.firstSeenAt;
   const days = finite(item?.daysOnMarket ?? listing.daysOnMarket);
   const provenance = node('p', 'pmc-provenance');
