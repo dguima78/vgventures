@@ -1,11 +1,13 @@
+import '/shared/vgv-command.js?v=20260821-1';
 const API_BASE = 'https://permuta-api.vgventures.com.br';
 const PAGE_SIZE = 25;
 const MODULES = [
-  { id: 'intelligence', name: 'VGVintel', purpose: 'captura, deduplicação, histórico e inteligência de mercado' },
+  { id: 'finder', name: 'VGVfinder', purpose: 'descoberta, similares e oportunidades imobiliárias', interfacePath: '/finder/' },
+  { id: 'intelligence', name: 'VGVintel', purpose: 'captura, deduplicação, histórico e inteligência de mercado', interfacePath: '/intel/' },
   { id: 'advisor', name: 'VGVadvisor', purpose: 'atendimento e recomendação imobiliária' },
-  { id: 'match', name: 'VGVmatch', purpose: 'imóvel ↔ perfil do cliente' },
+  { id: 'match', name: 'VGVmatch', purpose: 'imóvel ↔ perfil do cliente via VGVfinder', interfacePath: '/finder/?mode=match' },
   { id: 'crm', name: 'VGVcrm', purpose: 'leads, clientes, histórico e funil' },
-  { id: 'exchange', name: 'VGVexchange', purpose: 'avaliação e simulação de permutas' },
+  { id: 'exchange', name: 'VGVexchange', purpose: 'avaliação e simulação de permutas', interfacePath: '/exchange/' },
   { id: 'social', name: 'VGVsocial', purpose: 'geração, aprovação, agendamento e analytics de conteúdo' },
   { id: 'dashboard', name: 'VGVdashboard', purpose: 'dashboards, indicadores, performance e inteligência' },
 ];
@@ -403,9 +405,16 @@ function renderModule(moduleId) {
   }
   const membership = state.identity.memberships.find((item) => item.tenantId === state.selectedTenantId);
   pageHeading(membership?.tenantName || 'Organização', module.name);
-  const actions = moduleId === 'exchange' ? el('div', { className: 'actions' }, [
-    el('a', { className: 'button button-secondary', href: '/permuta/', text: 'Abrir interface de compatibilidade' }),
-  ]) : null;
+  if (module.interfacePath) {
+    replace(view, el('section', { className: 'module-workspace' }, [
+      el('div', { className: 'module-workspace-head' }, [
+        el('div', {}, [el('p', { className: 'kicker', text: `Aplicação · ${module.id}` }), el('p', { text: `Interface funcional de ${module.name} integrada ao console.` })]),
+        el('span', { className: 'readiness-label', text: 'Aplicação integrada' }),
+      ]),
+      el('iframe', { className: 'module-frame', src: module.interfacePath, title: `${module.name} - interface funcional` }),
+    ]));
+    return;
+  }
   replace(view, el('article', { className: 'module-hero' }, [
     el('p', { className: 'kicker', text: `Aplicação · ${module.id}` }),
     el('h2', { text: module.name }),
@@ -414,8 +423,6 @@ function renderModule(moduleId) {
       el('span', { className: 'readiness-label', text: 'Landing disponível' }),
       el('p', { text: 'A integração funcional do módulo com esta sessão ainda não está disponível.' }),
     ]),
-    actions,
-    moduleId === 'exchange' ? el('p', { className: 'field-note', text: 'A interface /permuta/ é mantida por compatibilidade e não compartilha autenticação com este control plane.' }) : null,
   ]));
 }
 

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://permuta-api.vgventures.com.br; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data: https://imgbr.imovelwebcdn.com https://si9dados3.com.br; base-uri 'none'; form-action 'self'">
+  <title>VGVexchange - Inteligência de Permuta</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/exchange/styles.css?v=20260821-4">
+  <link rel="stylesheet" href="/shared/property-market-comparison.css?v=20260821-1">
+</head>
+<body>
+  <div id="login" class="login-shell">
+    <div class="login-brand"><span>VGV</span><strong>exchange</strong></div>
+    <form id="login-form" class="login-card">
+      <p class="eyebrow">Acesso interno</p>
+      <h1>Inteligência para decidir antes de aceitar.</h1>
+      <p>Valuation, custos e valor econômico líquido de imóveis oferecidos em permuta.</p>
+      <input name="username" value="admin" autocomplete="username" hidden>
+      <label>Senha administrativa<input name="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit">Entrar no VGVexchange</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </form>
+  </div>
+
+  <div id="app" class="app-shell" hidden>
+    <aside>
+      <a class="logo" href="/exchange/"><span>VGV</span><strong>exchange</strong></a>
+      <nav>
+        <button class="nav-item active" data-view="new-analysis"><i>+</i>Nova análise</button>
+        <button class="nav-item" data-view="analyses"><i>↗</i>Análises anteriores</button>
+        <button class="nav-item" data-view="operations"><i>◇</i>Operações</button>
+        <button class="nav-item" data-view="properties"><i>⌂</i>Imóveis recebidos</button>
+        <button class="nav-item" data-view="tax-rules"><i>§</i>Regras tributárias</button>
+        <button class="nav-item" data-view="admin"><i>⚙</i>Administração</button>
+      </nav>
+      <div class="aside-foot"><span>V1 · Decisão explicável</span><button id="logout">Sair</button></div>
+    </aside>
+
+    <main>
+      <header><div><p class="eyebrow">Van Gogh Ventures</p><h1 id="page-title">Nova análise</h1></div><div class="system-status"><span></span>Data Core conectado</div></header>
+      <div id="notice" class="notice" hidden></div>
+
+      <section id="view-new-analysis" class="view active-view">
+        <fieldset class="asset-selector" aria-describedby="asset-selector-note">
+          <legend>Ativo oferecido na operação</legend>
+          <label><input type="radio" name="subjectAssetType" value="property" checked><span><strong>Imóvel</strong><small>Análise econômica completa e comparáveis imobiliários</small></span></label>
+          <label><input type="radio" name="subjectAssetType" value="vehicle"><span><strong>Veículo</strong><small>Inteligência de mercado, sem custos específicos do ativo</small></span></label>
+          <p id="asset-selector-note">Selecione a natureza do ativo recebido. Os fluxos e cálculos permanecem separados.</p>
+        </fieldset>
+        <form id="analysis-form">
+          <div class="form-section">
+            <div class="section-number">01</div><div class="section-heading"><h2>Operação principal</h2><p>O imóvel vendido também será avaliado contra o mercado.</p></div>
+            <div class="fields two-col">
+              <label class="wide">Imóvel principal<div class="property-picker"><input id="main-property-search" placeholder="Busque por condomínio, cidade ou VGV Property ID" autocomplete="off"><input type="hidden" name="mainPropertyId" required><div class="picker-results" id="main-property-results"></div></div></label>
+              <label class="wide">Preço pedido / negociado<input name="mainPropertySalePrice" inputmode="decimal" placeholder="R$ 5.000.000" required></label>
+              <input name="cashComponent" type="hidden">
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-number">02</div><div class="section-heading"><h2>Imóvel oferecido</h2><p>Cole o anúncio para importar ou selecione um ativo do Data Core.</p></div>
+            <div class="fields two-col">
+              <label class="wide">Link do anúncio<div class="url-import"><input id="property-url" type="url" placeholder="https://..." autocomplete="url"><button type="button" class="secondary" id="import-property-url">Ler anúncio</button></div><small id="property-import-status">Fontes suportadas: Imovelweb, ZAP, QuintoAndar, Chaves na Mão, VivaReal e parceiros VGV.</small></label>
+              <label class="wide">Imóvel em permuta<div class="property-picker"><input id="subject-property-search" placeholder="Busque o imóvel recebido" autocomplete="off"><input type="hidden" name="subjectPropertyId" required><div class="picker-results" id="subject-property-results"></div></div></label>
+              <div class="wide inline-action"><span>Não encontrou o imóvel?</span><button type="button" class="secondary" id="open-property-modal">Cadastrar no Data Core</button></div>
+              <label>Valor atribuído na permuta<input name="exchangeAgreedValue" inputmode="decimal" placeholder="R$ 1.500.000" required></label>
+              <label>Valor venal / avaliado<input name="assessedValue" inputmode="decimal" placeholder="Opcional"></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-number">03</div><div class="section-heading"><h2>Custos identificáveis</h2><p>Nenhuma taxa é aplicada silenciosamente. Revise cada sugestão.</p><button type="button" class="secondary compact" id="autofill-costs">Autopreencher custos verificáveis</button><small id="cost-suggestion-status"></small></div>
+            <div class="fields three-col">
+              <label>Comissão operação principal (%)<input name="sellerBrokerCommissionRate" inputmode="decimal" required></label>
+              <label>Corretagem futura (%)<input name="futureResaleCommissionRate" inputmode="decimal" required></label>
+              <label>Meses de carregamento<input name="expectedHoldingMonths" type="number" min="0" step="1" required></label>
+              <label>Registro<input name="registryCost" inputmode="decimal"></label>
+              <label>Cartório<input name="notaryCost" inputmode="decimal"></label>
+              <label>Jurídico<input name="legalCost" inputmode="decimal"></label>
+              <label>Inspeção<input name="inspectionCost" inputmode="decimal"></label>
+              <label>Reforma / adequação<input name="renovationCost" inputmode="decimal"></label>
+              <label>Manutenção<input name="maintenanceCost" inputmode="decimal"></label>
+              <label>Condomínio mensal<input name="monthlyCondoCost" inputmode="decimal"></label>
+              <label>IPTU mensal<input name="monthlyPropertyTaxCost" inputmode="decimal"></label>
+              <label>Outros custos<input name="otherCosts" inputmode="decimal"></label>
+              <label>ITBI manual<input name="manualTaxOverride" inputmode="decimal" placeholder="Somente com justificativa"></label>
+              <label class="wide">Justificativa do ITBI manual<input name="manualTaxReason" placeholder="Fonte e razão do override"></label>
+            </div>
+          </div>
+
+          <input name="analysisDate" type="hidden">
+          <div class="submit-bar"><div><strong>Liquidez é informativa</strong><span>Nenhum haircut é aplicado na V1.</span></div><button id="analyze-button" type="submit">Executar análise econômica</button></div>
+        </form>
+        <div id="analysis-result"></div>
+        <div id="property-market-comparison" aria-live="polite"></div>
+        <section id="vehicle-analysis-panel" class="vehicle-analysis-panel" hidden aria-labelledby="vehicle-analysis-title">
+          <div class="vehicle-analysis-intro"><div><p class="eyebrow">Ativo automotivo</p><h2 id="vehicle-analysis-title">Leitura de mercado do veículo</h2></div><p><strong>Inteligência de mercado pendente de análise de custos específica para veículos.</strong> Este fluxo não calcula nem persiste economia imobiliária, ITBI, cartório, registro, condomínio ou IPTU.</p></div>
+          <form id="vehicle-analysis-form" novalidate>
+            <div class="fields two-col">
+              <label class="wide">Veículo oferecido<div class="property-picker"><input id="exchange-vehicle-search" maxlength="200" placeholder="Busque por marca, modelo, versão ou ID" autocomplete="off" required><input type="hidden" name="vehicleId" required><div class="picker-results" id="exchange-vehicle-results"></div></div></label>
+              <label>Valor atribuído na operação<input name="attributedValue" inputmode="decimal" placeholder="R$ 250.000" required></label>
+            </div>
+            <p id="vehicle-analysis-error" class="error" role="alert"></p>
+            <div class="submit-bar vehicle-submit"><div><strong>Escopo exclusivamente mercadológico</strong><span>Até 10 anúncios similares, sem análise financeira do veículo.</span></div><button id="vehicle-analyze-button" type="submit">Gerar comparáveis do veículo</button></div>
+          </form>
+          <div id="vehicle-analysis-result" aria-live="polite"></div>
+        </section>
+      </section>
+
+      <section id="view-analyses" class="view"><div class="toolbar"><p>Histórico imutável de análises e revisões.</p><button class="secondary refresh" data-resource="analyses">Atualizar</button></div><div id="analyses-list" class="cards"></div></section>
+      <section id="view-operations" class="view"><div class="toolbar"><p>Operações em revisão, negociação ou com ajuste recomendado.</p></div><div id="operations-list" class="cards"></div></section>
+      <section id="view-properties" class="view"><div class="toolbar"><input id="properties-query" placeholder="Buscar no Data Core"><button class="secondary" id="properties-search-button">Buscar</button><button id="properties-create-button">Novo imóvel</button></div><div id="properties-list" class="table-wrap"></div></section>
+      <section id="view-tax-rules" class="view"><div class="toolbar"><p>Regras históricas. Nunca sobrescreva uma vigência anterior.</p><button id="open-tax-modal">Nova regra</button></div><div id="tax-rules-list" class="table-wrap"></div></section>
+      <section id="view-admin" class="view">
+        <div class="admin-grid">
+          <article class="admin-card admin-imports">
+            <div class="admin-card-head"><div><p class="eyebrow">Monitoramento</p><h2>Importações pendentes</h2><p>Falhas, extrações parciais e links adicionados manualmente.</p></div><button type="button" class="secondary" id="clear-import-attempts">Apagar todos</button></div>
+            <form id="import-attempt-form" class="url-import"><input name="url" type="url" placeholder="https://imobiliaria.com.br/anuncio" required><button type="submit">Adicionar link</button></form>
+            <p id="import-attempt-status" class="form-status"></p><div id="import-attempts-list" class="table-wrap"></div>
+          </article>
+          <article class="admin-card">
+            <p class="eyebrow">Contato</p><h2>E-mail administrativo</h2>
+            <form id="contact-settings-form" class="admin-form"><label>E-mail de contato<input name="contactEmail" type="email" autocomplete="email" placeholder="nome@empresa.com"></label><button type="submit">Atualizar e-mail</button><p class="form-status" id="contact-settings-status"></p></form>
+          </article>
+          <article class="admin-card">
+            <p class="eyebrow">Segurança</p><h2>Alterar senha</h2><p>A nova senha invalida as demais sessões.</p>
+            <form id="password-settings-form" class="admin-form"><label>Senha atual<input name="currentPassword" type="password" autocomplete="current-password" required></label><label>Nova senha<input name="newPassword" type="password" autocomplete="new-password" minlength="12" required></label><label>Confirmar nova senha<input name="confirmPassword" type="password" autocomplete="new-password" minlength="12" required></label><button type="submit">Alterar senha</button><p class="form-status" id="password-settings-status"></p></form>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="property-modal"><form id="property-form" method="dialog"><div class="modal-head"><div><p class="eyebrow">Data Core</p><h2>Cadastrar imóvel</h2></div><button type="button" class="close-modal">×</button></div><div class="fields two-col">
+    <label>Tipo<select name="propertyType" required><option value="apartment">Apartamento</option><option value="house">Casa</option><option value="land">Terreno</option><option value="commercial">Comercial</option><option value="other">Outro</option></select></label>
+    <label>Cidade<select name="cityId" id="property-city" required></select></label>
+    <label>Região<select name="regionId" id="property-region"><option value="">Sem região</option></select></label>
+    <label>Condomínio / edifício<select name="developmentId" id="property-development"><option value="">Sem empreendimento</option></select></label>
+    <label>Área privativa (m²)<input name="privateAreaM2" inputmode="decimal"></label>
+    <label>Área construída (m²)<input name="builtAreaM2" inputmode="decimal"></label>
+    <label>Dormitórios<input name="bedrooms" type="number" min="0"></label><label>Suítes<input name="suites" type="number" min="0"></label>
+    <label>Banheiros<input name="bathrooms" type="number" min="0"></label><label>Vagas<input name="parkingSpaces" type="number" min="0"></label>
+    <label>Andar<input name="floorNumber" type="number" min="0"></label><label>Ano de construção<input name="constructionYear" type="number" min="1800" max="2100"></label>
+    <div id="listing-review" class="wide listing-review" hidden><div class="review-heading"><strong>Dados extraídos do anúncio</strong><span>Revise antes de gravar</span></div>
+      <label class="wide">URL canônica<input name="listingUrl" type="url" readonly></label>
+      <label class="wide">Título<input name="listingTitle"></label>
+      <label>Preço anunciado<input name="listingAskingPrice" inputmode="decimal"></label><label>Condomínio<input name="listingCondoFee" inputmode="decimal"></label>
+      <label>IPTU<input name="listingPropertyTax" inputmode="decimal"></label><label>Código externo<input name="listingExternalId"></label>
+      <label class="wide">Descrição<textarea name="listingDescription" rows="3"></textarea></label>
+      <div class="wide evidence-review"><div class="review-heading"><strong>Mobília e ocupação</strong><button type="button" class="secondary compact" id="infer-property-images">Analisar imagens</button></div>
+        <div class="fields two-col"><label>Mobília<select id="furnishing-review"><option value="unknown">Desconhecida</option><option value="furnished">Mobiliado</option><option value="unfurnished">Não mobiliado</option></select></label><label>Ocupação<select id="occupancy-review"><option value="unknown">Desconhecida</option><option value="vacant">Desocupado</option><option value="occupied">Ocupado</option></select></label></div>
+        <p id="property-evidence-status" class="review-warning">A descrição do anúncio tem prioridade. Analise as imagens somente quando o texto não for conclusivo.</p>
+        <label id="confirm-image-inference" class="review-confirm" hidden><input id="confirm-image-inference-input" type="checkbox"> Revisei as imagens e confirmo ou corrigi as sugestões acima.</label>
+      </div>
+      <p id="listing-missing" class="wide review-warning"></p>
+    </div>
+  </div><p id="property-form-error" class="error modal-error" role="alert" hidden></p><div class="modal-actions"><button type="button" class="secondary close-modal">Cancelar</button><button type="submit">Cadastrar imóvel</button></div></form></dialog>
+
+  <dialog id="tax-modal"><form id="tax-form" method="dialog"><div class="modal-head"><div><p class="eyebrow">Regra versionada</p><h2>Nova regra tributária</h2></div><button type="button" class="close-modal">×</button></div><div class="fields two-col">
+    <label>Cidade<select name="cityId" id="tax-city" required></select></label><label>Alíquota (%)<input name="ratePercentage" inputmode="decimal"></label>
+    <label>Base<select name="calculationBasisType" required><option value="transaction_value">Valor da transação</option><option value="assessed_value">Valor avaliado</option><option value="greater_of_transaction_or_assessed">Maior entre transação e avaliado</option><option value="custom">Cálculo customizado</option></select></label>
+    <label>Válida a partir de<input name="validFrom" type="date" required></label><label>Válida até<input name="validUntil" type="date"></label>
+    <label class="wide">Fonte oficial<input name="sourceReference" type="url" placeholder="https://..."></label><label class="wide">Notas<textarea name="notes" rows="3"></textarea></label>
+  </div><div class="modal-actions"><button type="button" class="secondary close-modal">Cancelar</button><button type="submit">Cadastrar regra</button></div></form></dialog>
+
+  <script type="module" src="/exchange/app.js?v=20260821-5"></script>
+</body>
+</html>
