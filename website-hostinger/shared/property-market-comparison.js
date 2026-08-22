@@ -1,4 +1,4 @@
-const IMAGE_HOSTS = new Set(['imgbr.imovelwebcdn.com', 'si9dados3.com.br']);
+const IMAGE_HOSTS = new Set(['imgbr.imovelwebcdn.com', 'si9dados3.com.br', 'cdn.fullbroker.com.br']);
 let instanceCount = 0;
 
 const money = (value) => finite(value) === null ? 'Desconhecido' : new Intl.NumberFormat('pt-BR', {

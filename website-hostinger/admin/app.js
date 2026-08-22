@@ -1,4 +1,4 @@
-import '/shared/vgv-command.js?v=20260821-1';
+import '/shared/vgv-command.js?v=20260821-6';
 const API_BASE = 'https://permuta-api.vgventures.com.br';
 const PAGE_SIZE = 25;
 const MODULES = [
@@ -235,6 +235,7 @@ async function loadCapabilities() {
 }
 
 function renderNavigation() {
+  document.documentElement.dataset.tenantId=state.selectedTenantId||'';
   const nav = $('#primary-nav');
   const nodes = [];
   allowedRoutes().forEach((item, index) => {
@@ -401,6 +402,20 @@ async function renderOverview() {
   } catch (error) { renderError(error, renderOverview); }
 }
 
+function moduleFrameSource(module) {
+  const url = new URL(module.interfacePath, location.origin);
+  url.searchParams.set('tenantId', state.selectedTenantId);
+  url.searchParams.set('embedded', '1');
+  url.searchParams.set('v', '20260821-6');
+  const routeParameters = new URLSearchParams(location.search);
+  const deepLinks = module.id === 'exchange' ? ['listingUrl', 'subjectPropertyId'] : module.id === 'finder' ? ['q', 'similarTo', 'mode'] : module.id === 'intelligence' ? ['propertyId'] : [];
+  for (const key of deepLinks) {
+    const value = routeParameters.get(key);
+    if (value) url.searchParams.set(key, value);
+  }
+  return `${url.pathname}${url.search}`;
+}
+
 function renderModule(moduleId) {
   const module = availableModules().find((item) => item.id === moduleId);
   if (!module) {
@@ -409,14 +424,15 @@ function renderModule(moduleId) {
     return;
   }
   const membership = state.identity.memberships.find((item) => item.tenantId === state.selectedTenantId);
+  const tenantAware = ['finder','match','intelligence','exchange'].includes(module.id);
   pageHeading(membership?.tenantName || 'Organização', module.name);
   if (module.interfacePath) {
     replace(view, el('section', { className: 'module-workspace' }, [
       el('div', { className: 'module-workspace-head' }, [
-        el('div', {}, [el('p', { className: 'kicker', text: `Aplicação · ${module.id}` }), el('p', { text: `Interface funcional de ${module.name} integrada ao console.` })]),
-        el('span', { className: 'readiness-label', text: 'Aplicação integrada' }),
+        el('div', {}, [el('p', { className: 'kicker', text: `Aplicação · ${module.id}` }), el('p', { text: tenantAware ? `Interface funcional de ${module.name} integrada à sessão e à organização selecionada.` : `Interface operacional compartilhada de ${module.name}; a sessão e os dados ainda não são isolados pela organização selecionada.` })]),
+        el('span', { className: 'readiness-label', text: tenantAware ? 'Integração tenant ativa' : 'Interface compartilhada' }),
       ]),
-      el('iframe', { className: 'module-frame', src: `${module.interfacePath}${module.interfacePath.includes('?') ? '&' : '?'}tenantId=${encodeURIComponent(state.selectedTenantId)}`, title: `${module.name} - interface funcional` }),
+      el('iframe', { className: 'module-frame', src: moduleFrameSource(module), title: `${module.name} - interface funcional` }),
     ]));
     return;
   }

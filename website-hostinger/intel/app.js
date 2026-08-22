@@ -1,8 +1,10 @@
-import { renderPropertyMarketComparison, renderPropertyMarketComparisonError, renderPropertyMarketComparisonLoading } from '/shared/property-market-comparison.js?v=20260821-1';
-import '/shared/vgv-command.js?v=20260821-1';
+import { renderPropertyMarketComparison, renderPropertyMarketComparisonError, renderPropertyMarketComparisonLoading } from '/shared/property-market-comparison.js?v=20260821-6';
+import '/shared/vgv-command.js?v=20260821-6';
+if(window.self!==window.top)document.documentElement.classList.add('embedded');
 
 const API = 'https://permuta-api.vgventures.com.br';
-const state = { section: 'properties', selectedProperty: null, selectedVehicle: null };
+const parameters = new URLSearchParams(location.search);
+const state = { section: 'properties', selectedProperty: null, selectedVehicle: null, tenantId: parameters.get('tenantId'), permissions:new Set() };
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
@@ -28,8 +30,9 @@ function replace(node, children) {
 
 async function api(path, options = {}) {
   let response;
+  const tenantPath=state.tenantId?(path.startsWith('/api/v1/market/finder/')?path.replace('/api/v1/market/finder/',`/api/v1/tenants/${encodeURIComponent(state.tenantId)}/finder/`):path.startsWith('/api/v1/market/')?path.replace('/api/v1/market/',`/api/v1/tenants/${encodeURIComponent(state.tenantId)}/intelligence/`):path):path;
   try {
-    response = await fetch(`${API}${path}`, {
+    response = await fetch(`${API}${tenantPath}`, {
       method: options.method || 'GET', credentials: 'include',
       headers: { Accept: 'application/json', ...(options.body === undefined ? {} : { 'Content-Type': 'application/json' }) },
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
@@ -55,6 +58,7 @@ const display = (value) => value === null || value === undefined || value === ''
 const triState = (value) => value === true ? 'Sim' : value === false ? 'Não' : 'Desconhecido';
 const assertionLabel = (value) => ({ reported: 'Relatado', inferred: 'Inferido', verified: 'Verificado' }[value] || 'Desconhecido');
 const warningLabel = (value) => ({ subject_armoring_unknown: 'Blindagem do veículo principal desconhecida.', candidate_armoring_unknown: 'Blindagem deste comparável desconhecida.', unknown_armoring_candidates_penalized: 'Comparáveis sem informação de blindagem receberam penalização.' }[value] || String(value).replaceAll('_', ' '));
+const propertyTypeLabel = (value) => ({ house: 'Casa', apartment: 'Apartamento', land: 'Terreno', commercial: 'Comercial', other: 'Imóvel' }[value] || 'Imóvel');
 
 function safeHttpUrl(value) {
   try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password ? url.href : null; } catch { return null; }
@@ -64,7 +68,11 @@ function externalLink(url, label) {
   const safe = safeHttpUrl(url);
   return safe ? el('a', { className: 'source-link', href: safe, target: '_blank', rel: 'noopener noreferrer', text: label }) : el('span', { text: 'Referência inválida ou indisponível' });
 }
-function internalLink(url,label){return el('a',{className:'source-link',href:url,text:label});}
+function internalLink(url,label){
+  const parsed=new URL(url,location.origin),module=parsed.pathname.startsWith('/finder/')?'finder':parsed.pathname.startsWith('/exchange/')?'exchange':null;
+  if(state.tenantId&&module){parsed.searchParams.set('tenant',state.tenantId);return el('a',{className:'source-link',href:`/admin/${module}?${parsed.searchParams}`,target:'_top',text:label});}
+  return el('a',{className:'source-link',href:url,text:label});
+}
 
 function notify(message, isError = false) {
   const box = $('#notice'); box.textContent = message; box.classList.toggle('is-error', isError); box.hidden = false;
@@ -77,31 +85,35 @@ function setBusy(button, busy, label) {
 }
 
 async function boot() {
-  try { if ((await api('/session')).authenticated) return showApp(); } catch { /* Login remains visible. */ }
-  $('#login').hidden = false;
+  if(!state.tenantId){window.location.replace('/admin/intelligence');return;}
+  try {
+    const session=await api('/api/v1/session');
+    if(!session.authenticated||!session.memberships?.some((item)=>item.tenantId===state.tenantId))throw new Error('Sua sessão não possui acesso a esta organização.');
+    const capabilities=await api(`/api/v1/tenants/${encodeURIComponent(state.tenantId)}/capabilities`);
+    state.permissions=new Set(capabilities.permissions||[]);if(!state.permissions.has('intelligence.module.access'))throw new Error('VGVintel não está habilitado para esta organização.');
+    return showApp();
+  } catch(error) {
+    $('#login-error').textContent=error.message;
+    $('#login').hidden=false;
+  }
 }
 
 async function showApp() {
   $('#login').hidden = true; $('#app').hidden = false;
+  $('#logout').hidden=window.self!==window.top;
+  $('#toggle-import').hidden=!state.permissions.has('market.data.manage');
   const observed = $('#vehicle-import-form').elements.observedAt;
   const now = new Date(Date.now() - new Date().getTimezoneOffset() * 60000); observed.value = now.toISOString().slice(0, 16);
   await searchProperties();
-  const params = new URLSearchParams(location.search), propertyId = params.get('propertyId');
+  const propertyId = parameters.get('propertyId');
   if (propertyId && /^[0-9a-f-]{36}$/i.test(propertyId)) await loadProperty(propertyId);
 }
 
 $('#login-form').addEventListener('submit', async (event) => {
-  event.preventDefault(); const form = event.currentTarget; const button = $('button', form); $('#login-error').textContent = '';
-  if (!form.reportValidity()) return;
-  setBusy(button, true, 'Entrando...');
-  try { await api('/session', { method: 'POST', body: { password: new FormData(form).get('password') } }); await showApp(); }
-  catch (error) { $('#login-error').textContent = error.message; }
-  finally { setBusy(button, false); }
+  event.preventDefault();window.top.location.assign(`/admin/intelligence?tenant=${encodeURIComponent(state.tenantId||'')}`);
 });
 
-$('#logout').addEventListener('click', async () => {
-  try { await api('/session', { method: 'DELETE' }); } finally { location.reload(); }
-});
+$('#logout').addEventListener('click',()=>window.top.location.assign('/admin/'));
 
 $$('.section-tab').forEach((button) => button.addEventListener('click', async () => {
   state.section = button.dataset.section;
@@ -123,7 +135,7 @@ async function searchProperties() {
   try {
     const data = await api('/api/v1/market/finder/search',{method:'POST',body:{...(query?{text:query}:{criteria:{}}),offset:0,limit:Number(form.elements.limit.value)}}),items=data.items.map((row)=>row.item);
     $('#property-count').textContent = `${data.resultCount??items.length} resultado(s) via VGVfinder`;
-    replace($('#property-results'), items.length ? items.map((item) => el('button', { className: `result-card${state.selectedProperty === item.propertyId ? ' selected' : ''}`, type: 'button', onclick: () => loadProperty(item.propertyId) }, [el('div', {}, [el('strong', { text: propertyTitle(item) }), el('small', { text: `${display(item.propertyType)} · ${item.area == null ? 'área desconhecida' : `${item.area} m²`}` })]), el('span', { text: '→', 'aria-hidden': 'true' })])) : el('div', { className: 'empty-state', text: 'Nenhum imóvel encontrado.' }));
+      replace($('#property-results'), items.length ? items.map((item) => el('button', { className: `result-card${state.selectedProperty === item.propertyId ? ' selected' : ''}`, type: 'button', onclick: () => loadProperty(item.propertyId) }, [el('div', {}, [el('strong', { text: propertyTitle(item) }), el('small', { text: `${propertyTypeLabel(item.propertyType)} · ${item.area == null ? 'área desconhecida' : `${item.area} m²`}` })]), el('span', { text: '→', 'aria-hidden': 'true' })])) : el('div', { className: 'empty-state', text: 'Nenhum imóvel encontrado.' }));
   } catch (error) { replace($('#property-results'), el('div', { className: 'empty-state error', text: error.message })); }
   finally { setBusy(button, false); }
 }
@@ -167,7 +179,7 @@ function renderProperty(item) {
     const references = (Array.isArray(listing.imageUrls) ? listing.imageUrls : []).map((url, index) => { const safe = safeHttpUrl(url); return safe ? el('a', { href: safe, target: '_blank', rel: 'noopener noreferrer', text: `Imagem ${index + 1}` }) : null; }).filter(Boolean);
     return el('article', { className: 'source-card' }, [el('div', { className: 'source-card-head' }, [el('h4', { text: listing.sourceName || 'Fonte desconhecida' }), el('strong', { text: money(listing.askingPrice) })]), el('p', { text: listing.title || 'Anúncio sem título' }), el('small', { text: `Última observação: ${formatDate(listing.lastSeenAt)}` }), listing.canonicalUrl ? externalLink(listing.canonicalUrl, 'Abrir anúncio de origem') : null, references.length ? el('div', { className: 'reference-list', 'aria-label': 'Referências de imagem' }, references) : el('p', { text: 'Sem referências de imagem.' })]);
   });
-  replace($('#property-detail'), [el('div', { className: 'detail-head' }, [el('div', {}, [el('p', { className: 'eyebrow', text: display(item.propertyType) }), el('h2', { text: propertyTitle(item) }), el('p', { text: [item.regionName || item.region, item.cityName || item.city].filter(Boolean).join(' · ') || 'Localização desconhecida' })]), el('span', { className: 'id-chip', text: item.propertyId || item.id })]), el('div', { className: 'facts' }, [fact('Área', item.areaM2 == null ? null : `${item.areaM2} m²`), fact('Dormitórios', item.bedrooms), fact('Suítes', item.suites), fact('Banheiros', item.bathrooms), fact('Vagas', item.parkingSpaces), fact('Ano', item.constructionYear)]), el('section', { className: 'subsection' }, [el('h3', { text: 'Mobília e ocupação' }), ...evidenceCards]), el('section', { className: 'subsection' }, [el('h3', { text: `Anúncios e imagens (${listings.length})` }), ...(sourceCards.length ? sourceCards : [el('div', { className: 'unknown-note', text: 'Nenhum anúncio ou referência de imagem disponível.' })])])]);
+  replace($('#property-detail'), [el('div', { className: 'detail-head' }, [el('div', {}, [el('p', { className: 'eyebrow', text: propertyTypeLabel(item.propertyType) }), el('h2', { text: propertyTitle(item) }), el('p', { text: [item.regionName || item.region, item.cityName || item.city].filter(Boolean).join(' · ') || 'Localização desconhecida' })]), el('span', { className: 'id-chip', text: item.propertyId || item.id })]), el('div', { className: 'facts' }, [fact('Área', item.areaM2 == null ? null : `${item.areaM2} m²`), fact('Dormitórios', item.bedrooms), fact('Suítes', item.suites), fact('Banheiros', item.bathrooms), fact('Vagas', item.parkingSpaces), fact('Ano', item.constructionYear)]), el('section', { className: 'subsection' }, [el('h3', { text: 'Mobília e ocupação' }), ...evidenceCards]), el('section', { className: 'subsection' }, [el('h3', { text: `Anúncios e imagens (${listings.length})` }), ...(sourceCards.length ? sourceCards : [el('div', { className: 'unknown-note', text: 'Nenhum anúncio ou referência de imagem disponível.' })])])]);
 }
 
 $('#vehicle-search-form').addEventListener('submit', (event) => { event.preventDefault(); searchVehicles(); });
@@ -192,7 +204,7 @@ async function loadVehicle(id) {
 function renderVehicle(item) {
   const observations = Array.isArray(item.observations) ? item.observations : [];
   const observationNodes = observations.map((entry) => el('article', { className: 'evidence-card' }, [el('div', { className: 'evidence-card-head' }, [el('h4', { text: `${display(entry.factKey)}: ${typeof entry.value === 'boolean' ? triState(entry.value) : display(entry.value)}` }), evidenceStatus(entry.assertionStatus)]), el('p', { text: entry.rawEvidence || 'Sem texto complementar.' }), el('small', { text: formatDate(entry.observedAt) }), entry.sourceReference ? externalLink(entry.sourceReference, 'Abrir referência') : null]));
-  const button = el('button', { className: 'button primary', type: 'button', text: 'Gerar comparáveis', onclick: () => generateComparables(item.vehicleId, button) });
+  const button = el('button', { className: 'button primary', type: 'button', text: 'Gerar comparáveis', hidden:!state.permissions.has('market.data.manage'), onclick: () => generateComparables(item.vehicleId, button) });
   replace($('#vehicle-detail'), [el('div', { className: 'detail-head' }, [el('div', {}, [el('p', { className: 'eyebrow', text: 'Veículo' }), el('h2', { text: [item.make, item.model, item.version].filter(Boolean).join(' ') }), el('p', { text: item.listing ? `${item.listing.sourceName} · ${money(item.listing.askingPrice)} · ${formatDate(item.listing.lastSeenAt)}` : 'Sem anúncio ativo' })]), el('span', { className: 'id-chip', text: item.vehicleId })]), el('div', { className: 'facts' }, [fact('Fabricação / modelo', `${display(item.manufactureYear)} / ${display(item.modelYear)}`), fact('Quilometragem', item.mileageKm == null ? null : `${Number(item.mileageKm).toLocaleString('pt-BR')} km`), fact('Blindagem', triState(item.armored)), fact('Leilão', triState(item.auctionHistory)), fact('Sinistro', triState(item.sinisterHistory)), fact('Teto solar', triState(item.sunroof)), fact('Revisões concessionária', triState(item.dealershipServiceHistory)), fact('Chave reserva', triState(item.spareKey)), fact('Preço', item.listing ? money(item.listing.askingPrice) : null)]), item.listing?.canonicalUrl ? externalLink(item.listing.canonicalUrl, 'Abrir anúncio de origem') : null, el('section', { className: 'subsection' }, [el('div', { className: 'comparable-controls' }, [el('div', {}, [el('h3', { text: 'Comparáveis' }), el('span', { text: 'Conjunto persistido e ordenado pelo serviço.' })]), button]), el('div', { id: 'vehicle-comparables', className: 'loading', text: 'Consultando último conjunto...' })]), el('section', { className: 'subsection' }, [el('h3', { text: `Histórico de evidência (${observations.length})` }), ...(observationNodes.length ? observationNodes : [el('div', { className: 'unknown-note', text: 'Nenhuma observação histórica disponível.' })])])]);
 }
 
