@@ -8,7 +8,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://permuta-api.vgventures.com.br; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data: https://imgbr.imovelwebcdn.com https://si9dados3.com.br https://cdn.fullbroker.com.br; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'self'">
   <title>VGVfinder | Descoberta imobiliária</title>
   <link rel="icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/finder/styles.css?v=20260821-6">
+  <link rel="stylesheet" href="/finder/styles.css?v=20260822-11">
 </head>
 <body>
   <a class="skip" href="#content">Pular para resultados</a>
@@ -29,10 +29,10 @@
 
       <section id="status" class="status" aria-live="polite">Faça uma busca para consultar os imóveis ativos do Data Core.</section>
       <section id="listing-preview" class="listing-preview" hidden aria-live="polite"></section>
-      <section id="listing-registration" class="listing-registration" hidden aria-labelledby="listing-registration-title">
-        <div class="section-head"><div><p class="eyebrow">Data Core</p><h2 id="listing-registration-title">Revisar e cadastrar imóvel</h2></div><button id="close-listing-registration" class="quiet" type="button">Fechar</button></div>
-        <p class="registration-note">Revise os dados públicos extraídos. O anúncio só será gravado ao confirmar este formulário.</p>
-        <form id="listing-registration-form">
+       <dialog id="listing-registration" class="listing-registration" aria-labelledby="listing-registration-title">
+         <form id="listing-registration-form" method="dialog">
+           <div class="registration-head"><div><p class="eyebrow">Data Core</p><h2 id="listing-registration-title">Revisar e cadastrar imóvel</h2></div><button id="close-listing-registration" class="quiet registration-close" type="button" aria-label="Fechar">×</button></div>
+           <p class="registration-note">Revise os dados públicos extraídos. O anúncio só será gravado ao confirmar este formulário.</p>
           <div class="registration-grid">
             <label>Tipo<select name="propertyType" required><option value="apartment">Apartamento</option><option value="house">Casa</option><option value="land">Terreno</option><option value="commercial">Comercial</option><option value="other">Outro</option></select></label>
             <label>Cidade<select name="cityId" required></select></label>
@@ -54,13 +54,14 @@
           </div>
           <p id="listing-registration-error" class="error" role="alert"></p>
           <div class="registration-actions"><button class="quiet" id="cancel-listing-registration" type="button">Cancelar</button><button type="submit">Cadastrar no Data Core</button></div>
-        </form>
-      </section>
+         </form>
+         <div id="listing-registration-result" class="registration-result" hidden></div>
+       </dialog>
       <section id="saved-searches" class="saved-searches" hidden><div class="section-head"><div><p class="eyebrow">Uso pessoal</p><h2>Buscas salvas</h2></div><form id="save-search-form"><label>Nome da busca<input name="name" maxlength="120" required></label><button id="save-search" type="submit" disabled>Salvar busca atual</button></form></div><div id="saved-search-list" class="saved-search-list"></div></section>
       <section id="rankings" hidden><div class="section-head"><p class="eyebrow">Leituras rápidas</p><h2>Destaques da busca</h2></div><div class="ranking-grid"><article><h3>Top 5 oportunidades</h3><div id="top-opportunity"></div></article><article><h3>Top 5 menor preço</h3><div id="top-price"></div></article><article><h3>Top 5 menor R$/m²</h3><div id="top-ppm"></div></article></div></section>
       <section id="results" hidden><div class="section-head result-head"><div><p class="eyebrow">Inventário ativo</p><h2 id="result-count">Imóveis encontrados</h2></div><select id="sort" aria-label="Ordenar resultados"><option value="ranking">Melhor aderência</option><option value="opportunity">Oportunidade</option><option value="price">Menor preço</option><option value="ppm">Menor R$/m²</option></select></div><div id="result-list" class="result-list"></div><div class="pagination"><button id="previous" class="quiet" type="button">Anterior</button><span id="page-label"></span><button id="next" type="button">Próxima</button></div></section>
     </main>
   </div>
-  <script type="module" src="/finder/app.js?v=20260822-10"></script>
+  <script type="module" src="/finder/app.js?v=20260822-11"></script>
 </body>
 </html>
