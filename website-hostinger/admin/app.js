@@ -406,7 +406,7 @@ function moduleFrameSource(module) {
   const url = new URL(module.interfacePath, location.origin);
   url.searchParams.set('tenantId', state.selectedTenantId);
   url.searchParams.set('embedded', '1');
-  url.searchParams.set('v', '20260822-7');
+  url.searchParams.set('v', '20260822-10');
   const routeParameters = new URLSearchParams(location.search);
   const deepLinks = module.id === 'exchange' ? ['listingUrl', 'subjectPropertyId'] : module.id === 'finder' ? ['q', 'similarTo', 'mode'] : module.id === 'intelligence' ? ['propertyId'] : [];
   for (const key of deepLinks) {
