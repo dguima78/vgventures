@@ -1,0 +1,3 @@
+[submodule "website-hostinger"]
+	path = website-hostinger
+	url = git@github.com:dguima78/vgventures-hostinger.git
