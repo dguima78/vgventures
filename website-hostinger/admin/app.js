@@ -406,7 +406,7 @@ function moduleFrameSource(module) {
   const url = new URL(module.interfacePath, location.origin);
   url.searchParams.set('tenantId', state.selectedTenantId);
   url.searchParams.set('embedded', '1');
-  url.searchParams.set('v', '20260821-6');
+  url.searchParams.set('v', '20260822-7');
   const routeParameters = new URLSearchParams(location.search);
   const deepLinks = module.id === 'exchange' ? ['listingUrl', 'subjectPropertyId'] : module.id === 'finder' ? ['q', 'similarTo', 'mode'] : module.id === 'intelligence' ? ['propertyId'] : [];
   for (const key of deepLinks) {
@@ -414,6 +414,26 @@ function moduleFrameSource(module) {
     if (value) url.searchParams.set(key, value);
   }
   return `${url.pathname}${url.search}`;
+}
+
+function resizeModuleFrame(frame) {
+  const resize = () => {
+    const documentElement = frame.contentDocument?.documentElement;
+    const body = frame.contentDocument?.body;
+    if (!documentElement || !body) return;
+    documentElement.style.overflowY = 'hidden';
+    body.style.overflowY = 'hidden';
+    const height = Math.max(720, documentElement.scrollHeight, body.scrollHeight);
+    if (Math.abs(frame.getBoundingClientRect().height - height) > 1) frame.style.height = `${height}px`;
+  };
+  frame.addEventListener('load', () => {
+    frame.resizeObserver?.disconnect();
+    resize();
+    if (typeof ResizeObserver !== 'function') return;
+    frame.resizeObserver = new ResizeObserver(resize);
+    frame.resizeObserver.observe(frame.contentDocument.documentElement);
+    frame.resizeObserver.observe(frame.contentDocument.body);
+  });
 }
 
 function renderModule(moduleId) {
@@ -424,16 +444,11 @@ function renderModule(moduleId) {
     return;
   }
   const membership = state.identity.memberships.find((item) => item.tenantId === state.selectedTenantId);
-  const tenantAware = ['finder','match','intelligence','exchange'].includes(module.id);
   pageHeading(membership?.tenantName || 'Organização', module.name);
   if (module.interfacePath) {
-    replace(view, el('section', { className: 'module-workspace' }, [
-      el('div', { className: 'module-workspace-head' }, [
-        el('div', {}, [el('p', { className: 'kicker', text: `Aplicação · ${module.id}` }), el('p', { text: tenantAware ? `Interface funcional de ${module.name} integrada à sessão e à organização selecionada.` : `Interface operacional compartilhada de ${module.name}; a sessão e os dados ainda não são isolados pela organização selecionada.` })]),
-        el('span', { className: 'readiness-label', text: tenantAware ? 'Integração tenant ativa' : 'Interface compartilhada' }),
-      ]),
-      el('iframe', { className: 'module-frame', src: moduleFrameSource(module), title: `${module.name} - interface funcional` }),
-    ]));
+    const frame = el('iframe', { className: 'module-frame', src: moduleFrameSource(module), title: module.name, scrolling: 'no' });
+    replace(view, el('section', { className: 'module-workspace' }, frame));
+    resizeModuleFrame(frame);
     return;
   }
   replace(view, el('article', { className: 'module-hero' }, [

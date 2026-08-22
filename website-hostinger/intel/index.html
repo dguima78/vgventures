@@ -21,14 +21,13 @@
       <p class="folio">Van Gogh Ventures <span>Dados compartilhados de mercado</span></p>
     </section>
     <section class="login-panel">
-      <form id="login-form" class="login-form" novalidate>
-        <p class="eyebrow">Acesso interno legado</p>
-        <h2>Entrar no VGVintel</h2>
-        <p>Use a credencial administrativa compartilhada desta aplicação.</p>
-        <label>Senha administrativa<input name="password" type="password" autocomplete="current-password" required></label>
-        <button class="button primary" type="submit">Entrar</button>
+      <section class="login-form">
+        <p class="eyebrow">Acesso individual</p>
+        <h2>Sessão da plataforma necessária</h2>
+        <p>O VGVintel usa a mesma identidade e sessão do Painel VGV. Nenhuma senha adicional é necessária.</p>
+        <a class="button primary" href="/admin/intelligence">Entrar pelo Painel VGV</a>
         <p id="login-error" class="form-message error" role="alert"></p>
-      </form>
+      </section>
     </section>
   </main>
 
@@ -94,6 +93,6 @@
       </section>
     </main>
   </div>
-  <script type="module" src="/intel/app.js?v=20260821-6"></script>
+  <script type="module" src="/intel/app.js?v=20260822-7"></script>
 </body>
 </html>

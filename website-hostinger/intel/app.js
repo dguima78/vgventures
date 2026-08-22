@@ -109,10 +109,6 @@ async function showApp() {
   if (propertyId && /^[0-9a-f-]{36}$/i.test(propertyId)) await loadProperty(propertyId);
 }
 
-$('#login-form').addEventListener('submit', async (event) => {
-  event.preventDefault();window.top.location.assign(`/admin/intelligence?tenant=${encodeURIComponent(state.tenantId||'')}`);
-});
-
 $('#logout').addEventListener('click',()=>window.top.location.assign('/admin/'));
 
 $$('.section-tab').forEach((button) => button.addEventListener('click', async () => {
