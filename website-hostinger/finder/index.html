@@ -28,11 +28,12 @@
       </form></section>
 
       <section id="status" class="status" aria-live="polite">Faça uma busca para consultar os imóveis ativos do Data Core.</section>
+      <section id="listing-preview" class="listing-preview" hidden aria-live="polite"></section>
       <section id="saved-searches" class="saved-searches" hidden><div class="section-head"><div><p class="eyebrow">Uso pessoal</p><h2>Buscas salvas</h2></div><form id="save-search-form"><label>Nome da busca<input name="name" maxlength="120" required></label><button id="save-search" type="submit" disabled>Salvar busca atual</button></form></div><div id="saved-search-list" class="saved-search-list"></div></section>
       <section id="rankings" hidden><div class="section-head"><p class="eyebrow">Leituras rápidas</p><h2>Destaques da busca</h2></div><div class="ranking-grid"><article><h3>Top 5 oportunidades</h3><div id="top-opportunity"></div></article><article><h3>Top 5 menor preço</h3><div id="top-price"></div></article><article><h3>Top 5 menor R$/m²</h3><div id="top-ppm"></div></article></div></section>
       <section id="results" hidden><div class="section-head result-head"><div><p class="eyebrow">Inventário ativo</p><h2 id="result-count">Imóveis encontrados</h2></div><select id="sort" aria-label="Ordenar resultados"><option value="ranking">Melhor aderência</option><option value="opportunity">Oportunidade</option><option value="price">Menor preço</option><option value="ppm">Menor R$/m²</option></select></div><div id="result-list" class="result-list"></div><div class="pagination"><button id="previous" class="quiet" type="button">Anterior</button><span id="page-label"></span><button id="next" type="button">Próxima</button></div></section>
     </main>
   </div>
-  <script type="module" src="/finder/app.js?v=20260822-8"></script>
+  <script type="module" src="/finder/app.js?v=20260822-9"></script>
 </body>
 </html>
